@@ -64,7 +64,7 @@
     const meta = await new Request(`${CONFIG.repo}/digits.json`).loadJSON();
     fm.writeString(path, JSON.stringify(meta));
     return meta;
-  
+  }
 
   // Steps each digit by its advance width, which reproduces exactly what the font
   // does when laying out the string itself (verified against a native render).
