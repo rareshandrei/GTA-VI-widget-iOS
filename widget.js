@@ -1,16 +1,3 @@
-// GTA VI countdown — Scriptable medium widget.
-//
-// Shows one thing: the number of days left until release, outlined over the artwork.
-// Nothing else is drawn.
-//
-// The digits are pre-rendered PNGs rather than text because Scriptable can only draw
-// FILLED text and cannot load font files, so an outlined non-system face has to be
-// baked in advance (see tools/gen-assets.ps1). Everything is cached on first run, so
-// after that the widget works with no network at all.
-//
-// The whole file is one async IIFE: bootstrap.js loads this over the network and
-// eval()s it, and eval cannot handle top-level await. Returning the promise lets the
-// loader await completion.
 
 (async () => {
   const CONFIG = {
@@ -32,8 +19,6 @@
     debugDays: null,
   };
 
-  // -------------------------------------------------------------- day count
-
   // Calendar-day arithmetic, not millisecond division, so a DST change or "23 hours
   // left" can never produce an off-by-one.
   function daysUntilRelease(now) {
@@ -46,8 +31,6 @@
     // Just after the next local midnight, the only moment the number changes.
     return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 2, 0);
   }
-
-  // -------------------------------------------------------------- assets
 
   const fm = FileManager.local();
 
@@ -81,9 +64,7 @@
     const meta = await new Request(`${CONFIG.repo}/digits.json`).loadJSON();
     fm.writeString(path, JSON.stringify(meta));
     return meta;
-  }
-
-  // -------------------------------------------------------------- rendering
+  
 
   // Steps each digit by its advance width, which reproduces exactly what the font
   // does when laying out the string itself (verified against a native render).
@@ -151,8 +132,6 @@
     dc.drawTextInRect(text, new Rect(0, 130, CONFIG.canvas.width, 220));
     return dc.getImage();
   }
-
-  // -------------------------------------------------------------- main
 
   const now = new Date();
   const days = CONFIG.debugDays !== null ? CONFIG.debugDays : daysUntilRelease(now);
