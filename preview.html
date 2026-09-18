@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widget Preview</title>
+<script src="tools/digits-metrics.js"></script>
+<style>
+  :root { --bg:#14141a; --fg:#f2f2f5; --muted:#9a9aa8; --line:#2c2c36; }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; padding:24px 16px; background:var(--bg); color:var(--fg);
+    font:14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  h1 { font-size:15px; font-weight:600; margin:0 0 4px; letter-spacing:.01em; }
+  p.sub { color:var(--muted); margin:0 0 20px; font-size:13px; }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:20px; }
+  input[type=number] {
+    width:76px; padding:6px 8px; background:#1e1e26; color:var(--fg);
+    border:1px solid var(--line); border-radius:6px; font:inherit;
+  }
+  button {
+    padding:6px 11px; background:#1e1e26; color:var(--fg); border:1px solid var(--line);
+    border-radius:6px; font:inherit; cursor:pointer;
+  }
+  button:hover { background:#282833; }
+  .stage { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+  .shot { display:flex; flex-direction:column; gap:8px; }
+  .label { color:var(--muted); font-size:12px; }
+  /* The widget canvas is always 1014x474 (medium @3x); each shot scales it down. */
+  .widget {
+    position:relative; width:1014px; height:474px; overflow:hidden;
+    transform-origin:top left; border-radius:48px;
+    background:url("bg.jpg") center/cover no-repeat;
+  }
+  .widget img { position:absolute; }
+  .frame { overflow:hidden; }
+</style>
+</head>
+<body>
+
+<h1>GTA VI countdown — medium widget</h1>
+<p class="sub">Canvas is 1014&times;474, the true @3x size of an iOS medium widget. Left shot is actual size, right is scaled to roughly how big it sits on the home screen.</p>
+
+<div class="controls">
+  <label for="days">Days</label>
+  <input type="number" id="days" value="62" min="0" max="999">
+  <button data-set="62">62 (today)</button>
+  <button data-set="30">30</button>
+  <button data-set="9">9</button>
+  <button data-set="1">1</button>
+  <button data-set="0">0</button>
+</div>
+
+<div class="stage" id="stage"></div>
+
+<script>
+// Must match CONFIG.number in widget.js.
+const CENTER_X = 190;
+const CENTER_Y = 150;
+
+const SHOTS = [
+  { label: "actual size (1014×474)", scale: 1 },
+  { label: "on-screen size (338×158 pt)", scale: 338 / 1014 },
+];
+
+const stage = document.getElementById("stage");
+const input = document.getElementById("days");
+
+for (const shot of SHOTS) {
+  const wrap = document.createElement("div");
+  wrap.className = "shot";
+  const lab = document.createElement("div");
+  lab.className = "label";
+  lab.textContent = shot.label;
+  const frame = document.createElement("div");
+  frame.className = "frame";
+  frame.style.width = (1014 * shot.scale) + "px";
+  frame.style.height = (474 * shot.scale) + "px";
+  const w = document.createElement("div");
+  w.className = "widget";
+  w.style.transform = `scale(${shot.scale})`;
+  w.style.borderRadius = (48 / shot.scale) + "px";
+  frame.appendChild(w);
+  wrap.append(lab, frame);
+  stage.appendChild(wrap);
+  shot.el = w;
+}
+
+// Same layout arithmetic as drawNumber() in widget.js: step by advance width.
+function render(text) {
+  const m = window.DIGIT_METRICS;
+  if (!m) return;
+
+  let total = 0;
+  for (const ch of text) total += m.advance[ch];
+  const top = CENTER_Y - m.capHeight / 2 - m.stroke / 2;
+
+  for (const shot of SHOTS) {
+    shot.el.querySelectorAll("img").forEach(n => n.remove());
+    let x = CENTER_X - total / 2;
+    for (const ch of text) {
+      const img = document.createElement("img");
+      img.src = `digits/${ch}.png`;
+      img.style.left = (x - m.stroke / 2) + "px";
+      img.style.top = top + "px";
+      img.style.width = m.canvasWidth[ch] + "px";
+      img.style.height = m.canvasHeight + "px";
+      shot.el.appendChild(img);
+      x += m.advance[ch];
+    }
+  }
+}
+
+const update = () => render(String(Math.max(0, parseInt(input.value, 10) || 0)));
+input.addEventListener("input", update);
+document.querySelectorAll("button[data-set]").forEach(b => {
+  b.addEventListener("click", () => { input.value = b.dataset.set; update(); });
+});
+update();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Source artwork and reference screenshots. bg.jpg is generated from the first one;
+# keep the original locally, it is only needed to re-run tools/gen-assets.ps1.
+Jason_and_Lucia_Robbery_landscape.jpg
+ss1.png
+ss2.png
+
+# Local editor / harness config
+.claude/
