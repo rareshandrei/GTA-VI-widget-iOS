@@ -6,11 +6,6 @@ A medium iOS home screen widget showing the days until GTA VI releases on
 Runs on [Scriptable](https://scriptable.app) (free) — no Mac, no Xcode, no
 Apple Developer account, nothing that expires.
 
-<p>
-  <img src="ss1.png" width="380">
-  <img src="ss2.png" width="380">
-</p>
-
 ## Setup
 
 1. Install **Scriptable** from the App Store.
